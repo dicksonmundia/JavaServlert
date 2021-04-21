@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Room Management</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="./css/bootstrap.css">
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="#">Room Management</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+              <div class="navbar-nav">
+                <a class="nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
+                <a class="nav-link" href="#" onclick="logout()">Logout</a>
+              </div>
+            </div>
+        </nav>
+        <div class="container mt-5">
+            <div class="row">
+                <div class="col-sm-12 col-lg-12">
+                    <form>
+                        <div class="form-row">
+                          <div class="col-7">
+                              <input type="text" class="form-control" placeholder="Search room by type" onkeyup="search()" id="search_input">
+                          </div>
+                          <div class="col">
+                            
+                          </div>
+                          <div class="col">
+                              <a href="addeditroom.html?id=null&edit=no" class="btn btn-primary mb-2">Add New Room</a>
+                          </div>
+                        </div>
+                    </form>
+                    <div class="card">
+                        <div class="card-body">
+                            <table class="table table-striped">
+                                <thead>
+                                  <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Room Id</th>
+                                    <th scope="col">Room Type</th>
+                                    <th scope="col">Room location</th>
+                                    <th scope="col">Room Charges</th>
+                                    <th scope="col">Room Payment Status</th>
+                                    <th scope="col">Room Status</th>
+                                  </tr>
+                                </thead>
+                                <tbody id="rooms">
+                                  
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+        const session = ()=>{
+            const request = new XMLHttpRequest();
+            request.open("GET", "admin");
+            request.setRequestHeader("Content-type", "application/json?charset=UTF-8");
+            request.send();
+            request.onload = ()=>{
+                 if (request.readyState === 4 && request.status === 200) {
+                     var response = JSON.parse(request.responseText); 
+                     if (response.response === "success"){
+                          getRooms();
+                     }  else {
+                         window.location.href = "adminsignin.html";
+                     }
+                 }
+            }; 
+        };
+        session();
+        const logout = ()=>{
+            var user = {
+                action: "admin"
+            };
+            const request = new XMLHttpRequest();
+            request.open("POST", "logout");
+            request.setRequestHeader("Content-type", "application/json?charset=UTF-8");
+            request.send(JSON.stringify(user));
+            request.onload = ()=>{
+                 if (request.readyState === 4 && request.status === 200) {
+                     var response = JSON.parse(request.responseText); 
+                     if (response.response === "success")window.location.href = "adminsignin.html";  
+                 }
+            }; 
+        };
+       
+        
+        const getRooms = ()=>{
+            const request = new XMLHttpRequest();
+            request.open("GET", "rooms");
+            request.setRequestHeader("Content-type", "application/json?charset=UTF-8");
+            request.send();
+            request.onload = ()=>{
+                 if (request.readyState === 4 && request.status === 200){ 
+                    
+                     var response = JSON.parse(request.responseText); 
+                     for (let i = 0; i < response.length; i++) {
+                        var html = `
+                          <tr>
+                            <th scope="row">${i+1}</th>
+                            <td>${response[i].room_id}</td>
+                            <td>${response[i].room_type}</td>
+                            <td>${response[i].room_location}</td>
+                            <td>${response[i].room_charges}</td>
+                            <td>${response[i].room_payment}</td>
+                            <td>${response[i].room_status}</td>
+                            <td><a class="btn btn-primary btn-sm" href="addeditroom.html?id=${response[i].id}&edit=true">Edit room</a> / <a class="btn btn-success btn-sm" onclick = remove(${response[i].id}) >Remove room</a></td>
+                          </tr>`;
+                    
+                        document.getElementById("rooms").innerHTML += html;
+                     }
+                 }
+            }; 
+        };
+        const remove = (id)=>{
+             var book = {
+                action: "remove",
+                id: id
+            };
+            const request = new XMLHttpRequest();
+            request.open("POST", "rooms");
+            request.setRequestHeader("Content-type", "application/json?charset=UTF-8");
+            request.send(JSON.stringify(book));
+            request.onload = ()=>{
+                 if (request.readyState === 4 && request.status === 200) {
+                     
+                     var response = JSON.parse(request.responseText); 
+                     if(response.response === "success")location.reload();
+                     
+                 }
+            }; 
+        }
+        const search = ()=> {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("search_input");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("rooms");
+            tr = table.getElementsByTagName("tr");
+            for (i = 0; i < tr.length; i++) {
+              td = tr[i].getElementsByTagName("td")[1];
+              if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                  tr[i].style.display = "";
+                } else {
+                  tr[i].style.display = "none";
+                }
+              }       
+            }
+          }
+    </script>
+    </body>
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Accomodation Management</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="./css/bootstrap.css">
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="#">Accomodation Management</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+              <div class="navbar-nav">
+                <a class="nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
+                <a class="nav-link" href="#" onclick="logout()">Logout</a>
+              </div>
+            </div>
+        </nav>
+        <div class="container mt-5">
+            <div class="row">
+                <div class="col-sm-12 col-lg-12">
+                    <div class="card mt-5">
+                        <div class="card-header">
+                            <p>My Room</p>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-striped">
+                                <thead>
+                                  <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Room Id</th>
+                                    <th scope="col">Room Type</th>
+                                    <th scope="col">Room location</th>
+                                    <th scope="col">Room Charges</th>
+                                    <th scope="col">Room Payment Status</th>
+                                    
+                                  </tr>
+                                </thead>
+                                <tbody id="myrooms">
+                                  
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                          
+                    <div class="card mt-5">
+                        <div class="card-header">
+                            <p>Rooms</p>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-striped">
+                                <thead>
+                                  <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Room Id</th>
+                                    <th scope="col">Room Type</th>
+                                    <th scope="col">Room location</th>
+                                    <th scope="col">Room Charges</th>
+                                    <th scope="col">Room Payment Status</th>
+                                    <th scope="col">Room Status</th>
+                                  </tr>
+                                </thead>
+                                <tbody id="rooms">
+                                  
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+      <script>
+          var username = "";
+        const session = ()=>{
+            const request = new XMLHttpRequest();
+            request.open("GET", "student");
+            request.setRequestHeader("Content-type", "application/json?charset=UTF-8");
+            request.send();
+            request.onload = ()=>{
+                 if (request.readyState === 4 && request.status === 200) {
+                     var response = JSON.parse(request.responseText); 
+                     if (response.response === "success"){
+                         
+                         
+                          username = response.username;
+                           getRooms();
+                            getMyRooms();
+                     }  else {
+                         window.location.href = "adminsignin.html";
+                     }
+                 }
+            }; 
+        };
+        session();
+        const logout = ()=>{
+            var user = {
+                action: "student"
+            };
+            const request = new XMLHttpRequest();
+            request.open("POST", "logout");
+            request.setRequestHeader("Content-type", "application/json?charset=UTF-8");
+            request.send(JSON.stringify(user));
+            request.onload = ()=>{
+                 if (request.readyState === 4 && request.status === 200) {
+                     var response = JSON.parse(request.responseText); 
+                     if (response.response === "success")window.location.href = "index.html";  
+                 }
+            }; 
+        };
+       const getMyRooms = ()=>{
+           var room = {
+                username: username,
+                action: "get"
+            };
+            
+            const request = new XMLHttpRequest();
+            request.open("POST", "stdRoom");
+            request.setRequestHeader("Content-type", "application/json?charset=UTF-8");
+            request.send(JSON.stringify(room));
+            request.onload = ()=>{
+                 if (request.readyState === 4 && request.status === 200) {
+                     
+                     var response = JSON.parse(request.responseText);
+                     var html = `
+                            <tr> 
+                                <td>${1}</td>
+                                <td>${response.id}</td>
+                                <td>${response.room_type}</td>
+                                <td>${response.room_location}</td>
+                                <td>${response.room_charges}</td>
+                                <td>${response.room_payment}</td>
+                                <td>${response.room_payment === "Not Paid"?`<a class="btn btn-primary btn-sm" onclick=pay('${response.id}') >Pay</a>`:"" } <a class="btn btn-warning btn-sm" onclick=remove('${response.id}') >Remove</a></td>
+                            </tr>
+                    `;
+                if(response.id === undefined){
+                    
+                }else{
+                    document.getElementById("myrooms").innerHTML += html;
+                }
+                
+                     
+                     
+                 }
+            }; 
+       };
+        
+        const getRooms = ()=>{
+            const request = new XMLHttpRequest();
+            request.open("GET", "rooms");
+            request.setRequestHeader("Content-type", "application/json?charset=UTF-8");
+            request.send();
+            request.onload = ()=>{
+                 if (request.readyState === 4 && request.status === 200){ 
+                    
+                     var response = JSON.parse(request.responseText); 
+                     for (let i = 0; i < response.length; i++) {
+                        var html = `
+                          <tr>
+                            <th scope="row">${i+1}</th>
+                            <td>${response[i].room_id}</td>
+                            <td>${response[i].room_type}</td>
+                            <td>${response[i].room_location}</td>
+                            <td>${response[i].room_charges}</td>
+                            <td>${response[i].room_payment}</td>
+                            <td>${response[i].room_status}</td>
+                            <td>${response[i].room_status === "allocated"?"Room Allocated":`<a class="btn btn-primary btn-sm" onclick=bookRoom(${response[i].id},${response[i].room_charges},'${response[i].room_location}','${response[i].room_type}')>Book room</a>`}</td>
+                          </tr>`;
+                    
+                        document.getElementById("rooms").innerHTML += html;
+                     }
+                 }
+            }; 
+        };
+        const bookRoom = (id,charges,location,type,payment)=>{
+            var room = {
+                username: username,
+                id:id,
+                charges:charges,
+                location: location,
+                type:type,
+                payment:"payment"
+            };
+            
+            const request = new XMLHttpRequest();
+            request.open("POST", "bookRoom");
+            request.setRequestHeader("Content-type", "application/json?charset=UTF-8");
+            request.send(JSON.stringify(room));
+            request.onload = ()=>{
+                 if (request.readyState === 4 && request.status === 200) {
+                     
+                     var response = JSON.parse(request.responseText);
+                     if(response.response === "success"){
+                         window.location.href = `stdmanagentpage.html`;
+                     }
+                     
+                 }
+            }; 
+        };
+        const pay = (room_id)=>{
+           var std = {
+               action: "pay",
+               username: username,
+               room_id:room_id
+           };
+           console.log(std)
+           const request = new XMLHttpRequest();
+            request.open("POST", "stdRoom");
+            request.setRequestHeader("Content-type", "application/json?charset=UTF-8");
+            request.send(JSON.stringify(std));
+            request.onload = ()=>{
+                 if (request.readyState === 4 && request.status === 200) {
+                     
+                     var response = JSON.parse(request.responseText);
+                     if (response.response === "success"){
+                         window.location.href = `stdmanagentpage.html`;
+                     }
+                 }
+            }; 
+        };
+        
+        const remove = (room_id)=>{
+           var std = {
+               action: "remove",
+               username: username,
+               room_id:room_id
+           };
+           console.log(std)
+           const request = new XMLHttpRequest();
+            request.open("POST", "stdRoom");
+            request.setRequestHeader("Content-type", "application/json?charset=UTF-8");
+            request.send(JSON.stringify(std));
+            request.onload = ()=>{
+                 if (request.readyState === 4 && request.status === 200) {
+                     
+                     var response = JSON.parse(request.responseText);
+                     if (response.response === "success"){
+                         window.location.href = `stdmanagentpage.html`;
+                     }
+                 }
+            }; 
+        };
+      
+
+    </script>
+    </body>
+</html>

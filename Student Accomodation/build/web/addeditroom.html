@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Room</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="./css/bootstrap.css">
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="adminroommanagement.html">Room Management</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+              <div class="navbar-nav">
+                <a class="nav-link active" href="adminroommanagement.html">Home <span class="sr-only">(current)</span></a>
+                <a class="nav-link" href="#" onclick="logout()">Logout</a>
+              </div>
+            </div>
+        </nav>
+        <div class="container mt-5">
+            <div class="card">
+                <div class="card-body">
+                    <form id="book">
+                        <div class="form-row">
+                          <div class="col-4">
+                              <input type="text" class="form-control" id="room_id" placeholder="Enter Room id" required="">
+                          </div>
+                          <div class="col-4">
+                              <input type="text" class="form-control" placeholder="Room Type" required="" id="room_type">
+                          </div>
+                          <div class="col-4">
+                              <input type="text" class="form-control" placeholder="Room Location" id="room_location" required="">
+                          </div>
+                        </div>
+                        <div class="form-row mt-2">
+                          <div class="col-4">
+                              <input type="number" class="form-control" placeholder="Monthly Charges" required="" id="room_charges">
+                          </div>
+                          <div class="col-4">
+                              <select class="form-control" id="room_status" required="">
+                                <option value="allocated">Room is Allocated</option>
+                                <option selected value="available">Room is Available</option>
+                            </select>
+                          </div>
+                          <div class="col-4">
+                              <input type="text" class="form-control" placeholder="Payment Status" required="" id="room_payment">
+                          </div>
+                        </div>
+                        <div class="form-row mt-2">
+                          <div class="col-4">
+                            
+                          </div>
+                          <div class=" mr-auto ml-auto">
+                            <button type="submit" class="btn btn-primary mb-2">Submit</button>
+                          </div>
+                          <div class="col-4">
+                             
+                          </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <script>
+        var action = "add";
+        var id = 1;
+        var UrlParams = function (url) {
+            var params = {};
+            var parser = document.createElement('a');
+            parser.href = url;
+            var query = parser.search.substring(1);
+            var vars = query.split('&');
+                for (var i = 0; i < vars.length; i++) {
+                        var pair = vars[i].split('=');
+                        params[pair[0]] = decodeURIComponent(pair[1]);
+                }
+                return params;
+        };
+        const session = ()=>{
+            const request = new XMLHttpRequest();
+            request.open("GET", "admin");
+            request.setRequestHeader("Content-type", "application/json?charset=UTF-8");
+            request.send();
+            request.onload = ()=>{
+                 if (request.readyState === 4 && request.status === 200) {
+                     var response = JSON.parse(request.responseText); 
+                     if (response.response === "success"){
+                          var isEdit = UrlParams(window.location.href);
+                          if (isEdit.edit === "true"){
+                              action= "edit"
+                              id = isEdit.id;
+                              display(isEdit.id);
+                          }
+                     }  else {
+                         window.location.href = "adminsignin.html";
+                     }
+                 }
+            }; 
+        };
+        session();
+        const logout = ()=>{
+            var user = {
+                action: "admin"
+            };
+            const request = new XMLHttpRequest();
+            request.open("POST", "logout");
+            request.setRequestHeader("Content-type", "application/json?charset=UTF-8");
+            request.send(JSON.stringify(user));
+            request.onload = ()=>{
+                 if (request.readyState === 4 && request.status === 200) {
+                     var response = JSON.parse(request.responseText); 
+                     if (response.response === "success")window.location.href = "adminsignin.html";  
+                 }
+            }; 
+        };
+        
+        const display = (id)=>{
+            var book = {
+                action: "get",
+                id: id
+            };
+            const request = new XMLHttpRequest();
+            request.open("POST", "rooms");
+            request.setRequestHeader("Content-type", "application/json?charset=UTF-8");
+            request.send(JSON.stringify(book));
+            request.onload = ()=>{
+                 if (request.readyState === 4 && request.status === 200) {
+                     
+                     var response = JSON.parse(request.responseText); 
+                     document.getElementById("room_id").value = response.room_id;
+                     document.getElementById("room_type").value = response.room_type;
+                     document.getElementById("room_location").value = response.room_location;
+                     document.getElementById("room_charges").value = response.room_charges;
+                     document.getElementById("room_payment").value = response.room_payment;
+                     document.getElementById("room_status").value = response.room_status;
+                 }
+            }; 
+        };
+        
+        const form = document.getElementById("book");
+        form.addEventListener("submit", (e)=>{
+            e.preventDefault();
+            
+            var book = {
+                action: action,
+                id:id,
+                room_id: form.room_id.value.trim(),
+                room_type: form.room_type.value.trim(),
+                room_location: form.room_location.value.trim(),
+                room_charges: form.room_charges.value,
+                room_payment: form.room_payment.value.trim(),
+                room_status: form.room_status.value.trim()
+            };
+            const request = new XMLHttpRequest();
+            request.open("POST", "addroom");
+            request.setRequestHeader("Content-type", "application/json?charset=UTF-8");
+            request.send(JSON.stringify(book));
+            request.onload = ()=>{
+                 if (request.readyState === 4 && request.status === 200) {
+                     
+                     var response = JSON.parse(request.responseText); 
+                     console.log(response)
+                     if (response.response === "success"){
+                         window.location.href = "adminroommanagement.html";
+                     }  else {
+                        
+                     }
+                 }
+            }; 
+        });
+        
+    </script>
+    </body>
+</html>

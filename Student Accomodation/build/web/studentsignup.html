@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Sign-up</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="./css/bootstrap.css">
+    </head>
+    <body>
+        <div class="container mt-5">
+            <div class="row">
+                <div class="col-sm-6 col-lg-6 mr-auto ml-auto">
+                    <div class="card">
+                        <div class="card-header" id="error_msg">
+                            Student
+                        </div>
+                        <div class="card-body">
+                            <form id="signup">
+                                <div class="form-group row">
+                                  <label for="username" class="col-sm-3 col-form-label">Username</label>
+                                  <div class="col-sm-8">
+                                      <input type="text" class="form-control" id="username" required="">
+                                  </div>
+                                </div>
+                                <div class="form-group row">
+                                  <label for="password" class="col-sm-3 col-form-label">Password</label>
+                                  <div class="col-sm-8">
+                                      <input type="password" class="form-control" id="password" required="">
+                                  </div>
+                                </div>
+                                <div class="form-group row">
+                                  <label for="password2" class="col-sm-3 col-form-label">Confirm Password</label>
+                                  <div class="col-sm-8">
+                                      <input type="password" class="form-control" id="password2" required="">
+                                  </div>
+                                </div>
+                                <div class="form-group row">
+                                  <div class=" mr-auto ml-auto">
+                                    <button type="submit" class="btn btn-primary">Sign up</button>
+                                  </div>
+                                </div>
+                                <div class="form-group row">
+                                  <div class="col-sm-6"><a href="index.html" class="mt-2">back. </a></div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div> 
+        <script>
+            const form = document.getElementById("signup");
+            form.addEventListener('submit', (e)=>{
+                e.preventDefault();
+                var username = form.username.value.trim();
+                var password = form.password.value;
+                var password2 = form.password2.value;
+                if (password.localeCompare(password2) !== 0){
+                    document.getElementById("error_msg").innerText = `Passwords don't match.!`;
+                }else {
+                    var student = {
+                        action: "signup",
+                        info: {
+                            username: username,
+                            password: password
+                        }
+                    };
+                    
+                    const request = new XMLHttpRequest();
+                    request.open("POST", "student");
+                    request.setRequestHeader("Content-type", "application/json?charset=UTF-8");
+                    request.send(JSON.stringify(student));
+                     request.onload = ()=>{
+                          if (request.readyState === 4 && request.status === 200) {
+                              var response = JSON.parse(request.responseText); 
+                              
+                           
+                              switch (response.response){
+                                  case "updtated":
+                                      window.location.href = "index.html";
+                                      break;
+                                  case "existence":
+                                      document.getElementById("error_msg").innerText = `username exists!`;
+                                      break;
+                                  default:
+                                      document.getElementById("error_msg").innerText = `Error occured!`;
+                                      break;
+                              };
+                          }
+                     };
+                }
+            });
+        </script>
+    </body>
+</html>
